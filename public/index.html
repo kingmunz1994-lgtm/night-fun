@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Night Fun · ZK Token Launchpad on Midnight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@400;700&display=swap"/>
+<link rel="stylesheet" href="css/nightfun.css"/>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-logo">Night <span>Fun</span> 🌙</div>
+  <div class="nav-right">
+    <button class="btn btn-ghost btn-sm" onclick="switchTab('trending')">Discover</button>
+    <button class="btn btn-ghost btn-sm" onclick="switchTab('create')">Launch</button>
+    <button class="btn btn-primary btn-sm" id="wallet-btn" onclick="handleWalletClick()">
+      <span id="wallet-dot" style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:4px;"></span>
+      <span id="wallet-label">Sign in</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ TOAST ════════════════════════════════════════════════════ -->
+<div id="toast-wrap"></div>
+
+<!-- ══ MAIN ═════════════════════════════════════════════════════ -->
+<div class="page-inner">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag">🌙 Night Fun · ZK Token Launchpad · Midnight Network</div>
+    <h1>pump.fun, but your buys<br><em>are invisible.</em></h1>
+    <p>Launch a Midnight token + merch store in 5 minutes. Holders earn from every sale. No one can see your wallet buying. No front-running. No sniping.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary btn-lg" onclick="switchTab('create')">🚀 Launch your token →</button>
+      <button class="btn btn-ghost btn-lg" onclick="switchTab('trending')">Browse tokens</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-strip">
+    <div class="stat-cell">
+      <div class="stat-val" style="color:var(--glow);">847</div>
+      <div class="stat-lbl">Tokens launched</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" style="color:var(--green);">12,840</div>
+      <div class="stat-lbl">tNIGHT raised</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" style="color:var(--gold);">23</div>
+      <div class="stat-lbl">Graduating now</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">⊘</div>
+      <div class="stat-lbl">Buys ZK-shielded</div>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tabs-bar">
+    <div class="tab active" id="tab-trending"   onclick="switchTab('trending')">🔥 Trending</div>
+    <div class="tab"        id="tab-new"         onclick="switchTab('new')">🆕 New</div>
+    <div class="tab"        id="tab-graduating"  onclick="switchTab('graduating')">🎓 Graduating</div>
+    <div class="tab"        id="tab-king"        onclick="switchTab('king')">👑 King</div>
+    <div class="tab"        id="tab-create"      onclick="switchTab('create')">➕ Create</div>
+  </div>
+
+  <!-- ── Discover view ────────────────────────────────────────── -->
+  <div id="view-discover">
+    <div class="discover-layout">
+      <div id="token-grid" class="token-grid"></div>
+      <div class="live-panel">
+        <div class="live-head"><div class="live-dot"></div>Live trades</div>
+        <div id="live-feed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── King of the Hill view ────────────────────────────────── -->
+  <div id="view-king" style="display:none;">
+    <div style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:20px;">
+      First launches on Night Fun — two communities, one winner
+    </div>
+    <div class="koth-grid">
+      <div class="koth-card peace" onclick="joinKothSide('peace')">
+        <div class="koth-inner">
+          <div class="koth-icon">☮️</div>
+          <div class="koth-name">Peace</div>
+          <div class="koth-desc">Financial freedom. Privacy as a human right. We are the banks. Built for the 1 billion excluded from global finance.</div>
+          <button class="koth-btn">Join Peace →</button>
+        </div>
+      </div>
+      <div class="koth-vs">VS</div>
+      <div class="koth-card war" onclick="joinKothSide('war')">
+        <div class="koth-inner">
+          <div class="koth-icon">⚔️</div>
+          <div class="koth-name">War</div>
+          <div class="koth-desc">Burn the old system. Destroy the banks. The void aesthetic. Privacy as a weapon. The movement that breaks things.</div>
+          <button class="koth-btn">Join War →</button>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:16px;">Whichever community sells more merch wins. Real data. May the best community win. 🌙</p>
+  </div>
+
+  <!-- ── Create view ───────────────────────────────────────────── -->
+  <div id="view-create" style="display:none;">
+    <div class="create-wrap">
+
+      <!-- Launch form -->
+      <div class="card">
+        <div class="card-title">🚀 Launch your token + merch store</div>
+        <div class="card-sub">5 minutes. Zero fees. Token + bonding curve + merch store — live simultaneously.</div>
+        <div class="form-grid">
+          <div class="field"><label class="label">Project name</label><input class="input" id="nf-name" placeholder="e.g. NightDoge" type="text"/></div>
+          <div class="field"><label class="label">Token symbol</label><input class="input" id="nf-symbol" placeholder="e.g. NDOGE" type="text"/></div>
+          <div class="field"><label class="label">Total supply</label><input class="input" id="nf-supply" placeholder="1,000,000,000" type="text"/></div>
+          <div class="field"><label class="label">Your NIGHT wallet</label><input class="input" id="nf-wallet" placeholder="mn_addr_preprod1…" type="text"/></div>
+        </div>
+        <div class="field" style="margin-bottom:16px;">
+          <label class="label">Description</label>
+          <textarea class="input" id="nf-desc" placeholder="Tell the community what you're building…" style="min-height:72px;resize:vertical;"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="nf-launch-btn" onclick="launchNightFun()">🌙 Deploy token + merch store →</button>
+        <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-align:center;margin-top:8px;">⊘ ZK private · Midnight preprod · Holders earn from day one · Graduates to zswap at 85 tNIGHT</div>
+        <div class="circuit-log" id="nf-deploy-circuit" style="display:none;"></div>
+
+        <!-- Deploy result -->
+        <div class="result-box" id="nf-launch-result">
+          <div style="font-size:14px;font-weight:800;margin-bottom:4px;" id="nf-result-title">🎉 Token deployed!</div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:10px;" id="nf-result-sub">FungibleToken · Midnight Preprod</div>
+          <div style="font-size:9px;font-family:var(--mono);color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px;">Contract address</div>
+          <div class="result-addr" id="nf-result-addr">mn_contract_preprod1…</div>
+          <div class="result-grid">
+            <div class="result-stat"><div class="result-stat-label">Total supply</div><div class="result-stat-val" id="nf-rs-supply">—</div></div>
+            <div class="result-stat"><div class="result-stat-label">Symbol</div><div class="result-stat-val" style="color:var(--cyan);" id="nf-rs-symbol">—</div></div>
+            <div class="result-stat"><div class="result-stat-label">Merch store</div><div class="result-stat-val" style="color:var(--green);">✓ Live</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bonding curve -->
+      <div class="card" id="curve-card">
+        <div id="curve-panel"></div>
+      </div>
+
+      <!-- Night-ID -->
+      <div class="card">
+        <div class="card-title">🌙 Night-ID — your .night name</div>
+        <div class="card-sub">Register a <strong style="color:var(--cyan);font-family:var(--mono);">.night</strong> identity. Minted on Midnight. Shows on your token and profile.</div>
+        <div id="nightid-badge-wrap" style="margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="flex:1;position:relative;">
+            <input class="input" id="nightid-input" type="text" placeholder="yourname" maxlength="32" style="padding-right:52px;" oninput="document.getElementById('nightid-suffix').textContent=this.value?'.night':''"/>
+            <span id="nightid-suffix" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none;"></span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="registerNightId()">Register →</button>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="card" style="background:transparent;border-color:var(--rim);">
+        <div style="font-size:16px;font-weight:800;margin-bottom:20px;text-align:center;">How ZK trading works</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;text-align:center;">
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🔐</div>
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Shielded buys</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Your wallet address is never visible on-chain. You receive a ZK proof of purchase.</div>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🌊</div>
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Bonding curve</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Constant-product AMM. Fair launch price. Auto-graduates to zswap at 85 tNIGHT.</div>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🏪</div>
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Merch revenue</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Every token launch creates a Night Store. Holders earn 50% of merch revenue per epoch.</div>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🎓</div>
+            <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Graduation</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">At 85 tNIGHT the curve graduates to the zswap DEX. Liquidity locked forever.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-inner -->
+
+<!-- ══ WALLET MODAL ══════════════════════════════════════════════ -->
+<div class="overlay" id="ov-wallet" onclick="if(event.target===this)closeModal('ov-wallet')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('ov-wallet')">✕</button>
+    <div class="wc-icon">🌙</div>
+    <div class="wc-title">Connect to launch</div>
+    <div class="wc-sub">Connect a Midnight wallet to deploy tokens, trade on the bonding curve, and earn merch revenue.</div>
+    <div style="margin-bottom:16px;">
+      <a class="wc-wallet-link" href="https://midnight.network/lace" target="_blank">
+        🌑 Lace Wallet <span style="margin-left:auto;font-size:11px;color:var(--text2);">Install →</span>
+      </a>
+      <a class="wc-wallet-link" href="https://1am.xyz" target="_blank">
+        🌙 1AM Wallet <span style="margin-left:auto;font-size:11px;color:var(--text2);">Install →</span>
+      </a>
+    </div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="connectDemo()">🎭 Try Demo Mode</button>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">Demo uses simulated tNIGHT · no real funds</div>
+  </div>
+</div>
+
+<!-- ══ SCRIPTS ════════════════════════════════════════════════════ -->
+<script src="js/api.js"></script>
+<script src="js/tokens.js"></script>
+<script src="js/launch.js"></script>
+
+</body>
+</html>

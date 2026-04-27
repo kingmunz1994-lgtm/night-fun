@@ -1,0 +1,16 @@
+{
+  "name": "night-fun",
+  "version": "0.1.0",
+  "description": "ZK Token Launchpad on Midnight Network — pump.fun but your buys are invisible",
+  "scripts": {
+    "dev": "npx serve public -p 3002",
+    "compile": "compactc contracts/NightFunToken.compact src/nightfun_contract/"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^1.0.0",
+    "@midnight-ntwrk/dapp-connector-api": "^2.0.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}
