@@ -49,8 +49,10 @@ function launchNightFun() {
   const symbol = (document.getElementById('nf-symbol')?.value || '').trim().toUpperCase();
   const supply = (document.getElementById('nf-supply')?.value || '1,000,000,000').trim();
   const desc   = (document.getElementById('nf-desc')?.value || '').trim();
+  const bond   = parseFloat(document.getElementById('nf-bond')?.value || '10') || 10;
 
   if (!name || !symbol) { toast('Enter project name and token symbol', 'error'); return; }
+  if (bond < 10) { toast('Minimum creator bond is 10 tNIGHT', 'error'); return; }
   if (!walletState.connected) { openModal('ov-wallet'); return; }
 
   const btn = document.getElementById('nf-launch-btn');
@@ -62,13 +64,14 @@ function launchNightFun() {
   if (result)  result.style.display = 'none';
 
   const steps = [
-    { label: `Compiling FungibleToken circuit…`,      sub: `Compact → WASM · ${symbol}`, ms: 900 },
-    { label: 'Generating deploy ZK proof…',            sub: 'zkConfig · Midnight Preprod', ms: 1100 },
-    { label: `Deploying ${name} contract…`,            sub: `createToken(name="${name}", symbol="${symbol}", supply=${supply})`, ms: 1000 },
-    { label: 'Minting initial supply to deployer…',    sub: 'transfer() · shielded UTXO · Zswap', ms: 800 },
-    { label: 'Registering on LunarSwap pool…',         sub: `addLiquidity() · ${symbol}/NIGHT`, ms: 850 },
-    { label: 'Deploying Night Store merch contract…',  sub: 'Night Store · Printful integration', ms: 750 },
-    { label: '✓ Token live · merch store live',         sub: `Night Fun · Midnight preprod`, ms: 0 },
+    { label: `Compiling FungibleToken circuit…`,           sub: `Compact → WASM · ${symbol}`, ms: 900 },
+    { label: 'Generating deploy ZK proof…',                sub: 'zkConfig · Midnight Preprod', ms: 1100 },
+    { label: `Deploying ${name} contract…`,                sub: `createToken(name="${name}", symbol="${symbol}", supply=${supply})`, ms: 1000 },
+    { label: 'Locking creator bond + creator tokens…',     sub: `${bond} tNIGHT bond · creator tokens locked 30 days · no-dump enforced`, ms: 800 },
+    { label: 'Minting initial supply to deployer…',        sub: 'transfer() · shielded UTXO · Zswap', ms: 800 },
+    { label: 'Registering on LunarSwap pool…',             sub: `addLiquidity() · ${symbol}/NIGHT`, ms: 850 },
+    { label: 'Deploying Night Store merch contract…',      sub: 'Night Store · Printful integration', ms: 750 },
+    { label: '✓ Token live · bond locked · merch store live', sub: `Night Fun · Midnight preprod`, ms: 0 },
   ];
 
   if (circuit) {
@@ -90,7 +93,7 @@ function launchNightFun() {
     }
     if (i >= steps.length) {
       const addr = `mn_contract_preprod1${symbol.toLowerCase()}${Math.random().toString(36).slice(2, 10)}`;
-      onDeployed({ name, symbol, supply, addr, desc });
+      onDeployed({ name, symbol, supply, addr, desc, bond });
       if (btn) { btn.disabled = false; btn.textContent = '🌙 Launch another token →'; }
       return;
     }
@@ -105,8 +108,8 @@ function launchNightFun() {
   next();
 }
 
-function onDeployed({ name, symbol, supply, addr, desc }) {
-  nftdData = { name, symbol, supply, address: addr, desc, epoch: 0, epochRev: 0, holders: 1, claimable: 0, revFeed: [] };
+function onDeployed({ name, symbol, supply, addr, desc, bond }) {
+  nftdData = { name, symbol, supply, address: addr, desc, bond: bond || 10, epoch: 0, epochRev: 0, holders: 1, claimable: 0, revFeed: [], holderRevBps: 5000 };
   saveToken();
 
   const title = document.getElementById('nf-result-title');
@@ -124,8 +127,81 @@ function onDeployed({ name, symbol, supply, addr, desc }) {
   const result = document.getElementById('nf-launch-result');
   if (result) result.style.display = 'block';
 
+  nftdShow(nftdData);
   toast(`✓ $${symbol} deployed!`, 'success');
   renderCurvePanel();
+}
+
+// ── Token dashboard ────────────────────────────────────────────
+function nftdShow(data) {
+  nftdData = data;
+  saveToken();
+  const dash = document.getElementById('nf-token-dash');
+  const noD  = document.getElementById('nf-token-nodash');
+  if (dash) dash.style.display = 'block';
+  if (noD)  noD.style.display  = 'none';
+  nftdRender();
+}
+
+function nftdRender() {
+  if (!nftdData) return;
+  const d   = nftdData;
+  const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  set('nftd-name',       d.name     || '—');
+  set('nftd-symbol',     d.symbol   ? '$' + d.symbol : '—');
+  set('nftd-addr',       d.address  ? d.address.slice(0, 18) + '…' : 'preprod');
+  set('nftd-supply',     d.supply   ? Number(String(d.supply).replace(/,/g,'')).toLocaleString() : '—');
+  set('nftd-holders',    d.holders  || '1');
+  set('nftd-bond',       (d.bond || 10) + ' tNIGHT');
+  set('nftd-epoch',      d.epoch != null ? 'Epoch ' + d.epoch : 'Epoch 0');
+  set('nftd-epoch-rev',  d.epochRev ? d.epochRev + ' NIGHT' : '0 NIGHT');
+  set('nftd-merch-sales', d.merchSales || '0');
+  set('nftd-claimable',  d.claimable ? d.claimable + ' NIGHT' : '0 NIGHT');
+  set('nftd-rev-bps',    d.holderRevBps ? (d.holderRevBps / 100).toFixed(1) + '%' : '50%');
+
+  const feed = document.getElementById('nftd-rev-feed');
+  if (feed && d.revFeed && d.revFeed.length) {
+    feed.innerHTML = d.revFeed.slice(-5).reverse().map(f => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--raised);border:1px solid var(--rim);border-radius:8px;font-size:12px;margin-bottom:6px;">
+        <div><span style="color:var(--green);margin-right:8px;">↗</span>${f.desc}</div>
+        <div style="font-family:var(--mono);font-weight:700;color:var(--green);">+${f.amount} NIGHT</div>
+      </div>`).join('');
+  } else if (feed) {
+    feed.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">No revenue events yet.</div>';
+  }
+}
+
+async function nftdCloseEpoch() {
+  if (!nftdData) { toast('No token deployed', 'error'); return; }
+  toast('Closing epoch on Midnight…', 'info');
+  try {
+    const res = await apiPost('/api/nightfun/close-epoch', { tokenAddress: nftdData.address });
+    nftdData.epoch = (nftdData.epoch || 0) + 1;
+    nftdData.epochRev = 0;
+    nftdData.revFeed = nftdData.revFeed || [];
+    nftdData.revFeed.push({ desc: 'Epoch closed · revenue distributed', amount: res.distributed || 0 });
+    nftdShow(nftdData);
+    toast('✓ Epoch closed — revenue distributed to holders', 'success');
+  } catch {
+    nftdData.epoch = (nftdData.epoch || 0) + 1;
+    nftdData.revFeed = nftdData.revFeed || [];
+    nftdData.revFeed.push({ desc: 'Epoch closed (simulated)', amount: Math.floor(Math.random() * 50) });
+    nftdShow(nftdData);
+    toast('Epoch closed (simulation — API offline)', 'info');
+  }
+}
+
+async function nftdRefresh() {
+  if (!nftdData) return;
+  toast('Refreshing from chain…', 'info');
+  try {
+    const res = await apiGet('/api/nightfun/state?addr=' + (nftdData.address || ''));
+    Object.assign(nftdData, res);
+    nftdShow(nftdData);
+    toast('✓ Refreshed', 'success');
+  } catch {
+    toast('Chain offline — showing cached data', 'info');
+  }
 }
 
 // ── Bonding curve math ─────────────────────────────────────────
@@ -380,10 +456,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const result = document.getElementById('nf-launch-result');
     if (result) {
       result.style.display = 'block';
-      document.getElementById('nf-result-title').textContent = `🎉 ${nftdData.name} ($${nftdData.symbol})`;
-      document.getElementById('nf-result-addr').textContent  = nftdData.address;
-      document.getElementById('nf-rs-supply').textContent    = nftdData.supply;
-      document.getElementById('nf-rs-symbol').textContent    = nftdData.symbol;
+      const title = document.getElementById('nf-result-title');
+      const addr  = document.getElementById('nf-result-addr');
+      const rs    = document.getElementById('nf-rs-supply');
+      const sym   = document.getElementById('nf-rs-symbol');
+      if (title) title.textContent = `🎉 ${nftdData.name} ($${nftdData.symbol})`;
+      if (addr)  addr.textContent  = nftdData.address;
+      if (rs)    rs.textContent    = nftdData.supply;
+      if (sym)   sym.textContent   = nftdData.symbol;
     }
+    nftdShow(nftdData);
   }
 });

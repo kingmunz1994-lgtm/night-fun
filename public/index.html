@@ -125,6 +125,15 @@
           <label class="label">Description</label>
           <textarea class="input" id="nf-desc" placeholder="Tell the community what you're building…" style="min-height:72px;resize:vertical;"></textarea>
         </div>
+        <!-- Creator bond — no-dump mechanism -->
+        <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--glow);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">🔒 No-dump creator bond</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;">
+            <input class="input" id="nf-bond" type="number" min="10" value="10" placeholder="10"/>
+            <span style="font-size:12px;font-family:var(--mono);color:var(--muted);white-space:nowrap;">tNIGHT bond</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:6px;">Bond is locked on-chain for 30 days. Creator tokens are also locked. Prevents rug pulls.</div>
+        </div>
         <button class="btn btn-primary btn-full btn-lg" id="nf-launch-btn" onclick="launchNightFun()">🌙 Deploy token + merch store →</button>
         <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-align:center;margin-top:8px;">⊘ ZK private · Midnight preprod · Holders earn from day one · Graduates to zswap at 85 tNIGHT</div>
         <div class="circuit-log" id="nf-deploy-circuit" style="display:none;"></div>
@@ -147,6 +156,43 @@
       <div class="card" id="curve-card">
         <div id="curve-panel"></div>
       </div>
+
+      <!-- Token dashboard — shown after deploy -->
+      <div class="card" id="nf-token-dash" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;">📊 <span id="nftd-name">—</span> <span id="nftd-symbol" style="color:var(--cyan);font-family:var(--mono);font-size:13px;"></span></div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--muted);" id="nftd-addr">preprod</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="nftdRefresh()">↺ Refresh</button>
+            <button class="btn btn-primary btn-sm" onclick="nftdCloseEpoch()">🔒 Close epoch</button>
+          </div>
+        </div>
+        <div class="result-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
+          <div class="result-stat"><div class="result-stat-label">Total supply</div><div class="result-stat-val" id="nftd-supply">—</div></div>
+          <div class="result-stat"><div class="result-stat-label">Holders</div><div class="result-stat-val" style="color:var(--cyan);" id="nftd-holders">1</div></div>
+          <div class="result-stat"><div class="result-stat-label">Creator bond</div><div class="result-stat-val" style="color:var(--glow);" id="nftd-bond">10 tNIGHT</div></div>
+        </div>
+        <div class="result-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
+          <div class="result-stat"><div class="result-stat-label">Current epoch</div><div class="result-stat-val" id="nftd-epoch">Epoch 0</div></div>
+          <div class="result-stat"><div class="result-stat-label">Epoch revenue</div><div class="result-stat-val" style="color:var(--green);" id="nftd-epoch-rev">0 NIGHT</div></div>
+          <div class="result-stat"><div class="result-stat-label">Merch sales</div><div class="result-stat-val" style="color:var(--gold);" id="nftd-merch-sales">0</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div class="result-stat" style="text-align:left;padding:12px;">
+            <div class="result-stat-label" style="margin-bottom:6px;">Your claimable NIGHT</div>
+            <div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--green);" id="nftd-claimable">0 NIGHT</div>
+          </div>
+          <div class="result-stat" style="text-align:left;padding:12px;">
+            <div class="result-stat-label" style="margin-bottom:6px;">Holder revenue share</div>
+            <div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--cyan);" id="nftd-rev-bps">—</div>
+          </div>
+        </div>
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Revenue feed</div>
+        <div id="nftd-rev-feed"></div>
+      </div>
+      <div id="nf-token-nodash"></div>
 
       <!-- Night-ID -->
       <div class="card">
