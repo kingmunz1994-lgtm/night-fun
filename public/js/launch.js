@@ -130,6 +130,7 @@ function onDeployed({ name, symbol, supply, addr, desc, bond }) {
   nftdShow(nftdData);
   toast(`✓ $${symbol} deployed!`, 'success');
   renderCurvePanel();
+  awardNightScore('token');
 }
 
 // ── Token dashboard ────────────────────────────────────────────
@@ -268,6 +269,7 @@ async function buyCurveTokens() {
   saveCurve();
   renderCurvePanel();
   toast(`✓ Bought ${tokensOut.toLocaleString()} $${nftdData?.symbol || 'tokens'}`, 'success');
+  awardNightScore('trade');
   if (_curveState.nightReserve >= 85) toast('🎓 Graduation threshold reached!', 'success');
 }
 
@@ -446,9 +448,30 @@ function renderAll() {
   renderCurvePanel();
 }
 
+// ── Night Score ────────────────────────────────────────────────
+function loadNightScore() {
+  try { return JSON.parse(localStorage.getItem('night_score') || '{"score":0,"hands":0,"zk":0,"tokens":0}'); }
+  catch { return { score: 0, hands: 0, zk: 0, tokens: 0 }; }
+}
+function awardNightScore(type) {
+  const ns = loadNightScore();
+  if (type === 'token') { ns.tokens = (ns.tokens || 0) + 1; ns.score = (ns.score || 0) + 25; }
+  if (type === 'trade') { ns.score = (ns.score || 0) + 3; }
+  localStorage.setItem('night_score', JSON.stringify(ns));
+  renderNightScoreBadge();
+}
+function renderNightScoreBadge() {
+  const ns  = loadNightScore();
+  const el  = document.getElementById('ns-badge');
+  if (!el) return;
+  el.style.display = 'flex';
+  el.textContent = `⭐ Night Score: ${ns.score}`;
+}
+
 // ── Init ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   updateWalletUI();
+  renderNightScoreBadge();
   initTokens();
   switchTab('trending');
   renderCurvePanel();
