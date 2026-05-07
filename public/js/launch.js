@@ -22,10 +22,27 @@ function connectDemo() {
   renderAll();
 }
 
+async function connectRealWallet() {
+  const btn = document.getElementById('wc-connect-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Connecting…'; }
+  try {
+    const ws = await nightWallet.connect('lace');
+    walletState = { connected: true, demo: false, address: ws.address };
+    closeModal('ov-wallet');
+    updateWalletUI();
+    toast('✓ Wallet connected', 'success');
+    renderAll();
+  } catch (err) {
+    toast('Connection failed: ' + (err.message || 'Wallet not found'), 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '⊘ Connect Lace / 1AM / Nocturne'; }
+  }
+}
+
 function handleWalletClick() {
   if (walletState.connected) {
     if (confirm('Disconnect?')) {
       walletState = { connected: false, demo: false, address: null };
+      nightWallet.disconnect?.();
       updateWalletUI();
     }
   } else {

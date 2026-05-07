@@ -1,5 +1,5 @@
 // Night ecosystem wallet connector — shared across all Night apps
-// Supports Midnight Lace extension, Nocturne, and demo mode fallback
+// Supports Midnight DApp Connector v4 (Lace, 1AM, Nocturne) and demo mode fallback
 
 var nightWallet = (function () {
   var _state = { connected: false, demo: false, address: null, night: 0, dust: 0, api: null };
@@ -9,23 +9,35 @@ var nightWallet = (function () {
 
   function onStateChange(fn) { _listeners.push(fn); }
 
-  function hasLace() { return !!(window.midnight && (window.midnight.mnLace || window.midnight.mnNocturne)); }
+  function hasLace() { return !!(window.midnight && Object.values(window.midnight).some(w => w?.connect)); }
 
   async function connectLace() {
     const m = window.midnight;
-    if (!m) throw new Error('Midnight wallet not found — install Lace or Nocturne.');
-    const connector = m.mnLace || m.mnNocturne;
-    if (!connector) throw new Error('No Midnight connector found in window.midnight.');
-    const api = await connector.enable();
+    if (!m) throw new Error('Midnight wallet not found — install Lace, 1AM, or Nocturne.');
+    // DApp Connector v4: use connect(networkId) — enable() is removed
+    let walletEntry = null;
+    if (m.mnLace?.connect) walletEntry = m.mnLace;
+    else {
+      const key = Object.keys(m).find(k => m[k]?.connect);
+      if (key) walletEntry = m[key];
+    }
+    if (!walletEntry) throw new Error('No compatible Midnight wallet found.');
+    let api = null;
+    for (const net of ['mainnet', 'preprod', 'undeployed']) {
+      try { api = await walletEntry.connect(net); if (api) break; } catch (e) {}
+    }
+    if (!api) throw new Error('Wallet connection rejected.');
     let address = 'midnight1unknown';
     let night = 0, dust = 0;
     try {
-      const state = await api.state?.();
-      address = state?.address ?? state?.coinPublicKey ?? address;
-      const bals = state?.balances ?? {};
+      const unshAddr = await api.getUnshieldedAddress?.();
+      if (unshAddr) address = unshAddr;
+    } catch { /* shielded-only wallet */ }
+    try {
+      const bals = await api.balances?.() ?? {};
       night = Number(bals.night ?? bals.NIGHT ?? 0);
       dust  = Number(bals.dust  ?? bals.DUST  ?? 0);
-    } catch { /* wallet may not expose balance pre-connection */ }
+    } catch { /* balance unavailable */ }
     _state = { connected: true, demo: false, address, night, dust, api };
     _notify();
     return { ..._state };

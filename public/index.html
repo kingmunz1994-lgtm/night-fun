@@ -248,6 +248,8 @@
     <div class="wc-icon">🌙</div>
     <div class="wc-title">Connect to launch</div>
     <div class="wc-sub">Connect a Midnight wallet to deploy tokens, trade on the bonding curve, and earn merch revenue.</div>
+    <button class="btn btn-primary btn-full btn-lg" id="wc-connect-btn" onclick="connectRealWallet()" style="margin-bottom:12px;">⊘ Connect Lace / 1AM / Nocturne</button>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--muted);text-align:center;margin-bottom:16px;">Already installed? Click above to connect.</div>
     <div style="margin-bottom:16px;">
       <a class="wc-wallet-link" href="https://midnight.network/lace" target="_blank">
         🌑 Lace Wallet <span style="margin-left:auto;font-size:11px;color:var(--text2);">Install →</span>
@@ -256,8 +258,23 @@
         🌙 1AM Wallet <span style="margin-left:auto;font-size:11px;color:var(--text2);">Install →</span>
       </a>
     </div>
-    <button class="btn btn-primary btn-full btn-lg" onclick="connectDemo()">🎭 Try Demo Mode</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="flex:1;height:1px;background:var(--rim);"></div><span style="font-size:10px;font-family:var(--mono);color:var(--muted);">or</span><div style="flex:1;height:1px;background:var(--rim);"></div></div>
+    <button class="btn btn-ghost btn-full" onclick="connectDemo()">🎭 Try Demo Mode</button>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">Demo uses simulated tNIGHT · no real funds</div>
+  </div>
+</div>
+
+<!-- ══ BUY MODAL ════════════════════════════════════════════════ -->
+<div class="overlay" id="buy-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('buy-modal').classList.remove('open')">✕</button>
+    <div style="font-size:24px;margin-bottom:4px;" id="bm-name">—</div>
+    <div style="font-size:12px;font-family:var(--mono);color:var(--muted);margin-bottom:4px;" id="bm-symbol">—</div>
+    <div style="font-size:11px;font-family:var(--mono);color:var(--text2);margin-bottom:20px;" id="bm-night">—</div>
+    <label class="label" style="display:block;margin-bottom:6px;">tNIGHT to spend</label>
+    <input class="input" id="bm-amount" type="number" placeholder="e.g. 1.0" min="0.01" step="0.1" style="margin-bottom:16px;"/>
+    <button class="btn btn-primary btn-full btn-lg" onclick="confirmBuy()">⊘ Buy (ZK-shielded) →</button>
+    <div style="margin-top:10px;font-size:10px;font-family:var(--mono);color:var(--muted);text-align:center;">Your address is never visible on-chain · ZK proof of purchase issued</div>
   </div>
 </div>
 
