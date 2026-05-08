@@ -1,5 +1,18 @@
 // ── Night Fun — launch, curve, Night-ID ──────────────────────
 
+const NIGHT_ID_API = 'https://night-markets-94-production.up.railway.app';
+async function recordAction(points) {
+  const addr = walletState?.address;
+  if (!addr) return;
+  try {
+    await fetch(`${NIGHT_ID_API}/api/nightid/record-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ holderAddress: addr, appId: 'night-fun', points }),
+    });
+  } catch (_) {}
+}
+
 // ── State ─────────────────────────────────────────────────────
 var nftdData   = JSON.parse(localStorage.getItem('nf_token') || 'null');
 var _curveState = JSON.parse(localStorage.getItem('nf_curve') || 'null');
@@ -472,7 +485,7 @@ function loadNightScore() {
 }
 function awardNightScore(type) {
   const ns = loadNightScore();
-  if (type === 'token') { ns.tokens = (ns.tokens || 0) + 1; ns.score = (ns.score || 0) + 25; }
+  if (type === 'token') { ns.tokens = (ns.tokens || 0) + 1; ns.score = (ns.score || 0) + 25; recordAction(25); }
   if (type === 'trade') { ns.score = (ns.score || 0) + 3; }
   localStorage.setItem('night_score', JSON.stringify(ns));
   renderNightScoreBadge();
