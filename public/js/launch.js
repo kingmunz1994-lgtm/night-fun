@@ -266,6 +266,7 @@ async function launchCurve() {
     _curveState = { tokenAddress: nftdData.address, nightReserve: 1, tokenReserve: initialTokens, privacy: privacyEnabled, graduated: false, createdAt: Date.now() };
     saveCurve();
     toast('✓ Bonding curve live!', 'success');
+    recordAction(20);
   } catch {
     _curveState = { tokenAddress: nftdData?.address || 'local', nightReserve: 1, tokenReserve: initialTokens, privacy: privacyEnabled, graduated: false, createdAt: Date.now() };
     saveCurve();
@@ -300,6 +301,7 @@ async function buyCurveTokens() {
   renderCurvePanel();
   toast(`✓ Bought ${tokensOut.toLocaleString()} $${nftdData?.symbol || 'tokens'}`, 'success');
   awardNightScore('trade');
+  recordAction(10);
   if (_curveState.nightReserve >= 85) toast('🎓 Graduation threshold reached!', 'success');
 }
 
@@ -327,6 +329,7 @@ async function sellCurveTokens() {
   saveCurve();
   renderCurvePanel();
   toast(`✓ Received ${nightOut.toFixed(4)} tNIGHT`, 'success');
+  recordAction(5);
 }
 
 // ── Render curve panel ─────────────────────────────────────────
